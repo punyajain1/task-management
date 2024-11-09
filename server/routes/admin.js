@@ -5,7 +5,6 @@ const jwt = require('jsonwebtoken');
 const key = "punya123"
 const { adminMiddleware } = require("../middlewere/adminmidd.js");
 const {default: mongoose} = require("mongoose");
-const ObjectId = mongoose.Types.ObjectId;
 
 mongoose.connect("mongodb+srv://punya01155:9810845969@cluster0.fm077.mongodb.net/")
 
@@ -58,7 +57,7 @@ adminRouter.post("/signin", async function(req,res){
     }
 })
 
-adminRouter.post("/task" , async function(req,res){
+adminRouter.post("/task" ,adminMiddleware,async function(req,res){
     const adminid = req.adminid;
     const {title,description,due_date,asignee,status} = req.body;
     const task = await taskmodel.create({
@@ -92,13 +91,19 @@ adminRouter.put("/task", async function(req,res){
     res.json({msg:"task updated"});
 })
 
-adminRouter.delete("/task" , async function(req,res){
+adminRouter.delete("/task" , adminMiddleware,async function(req,res){
+    const adminid = req.adminid;
+    const admin = usermodel.findById(adminid);
     try{
-        const task = await Task.findByIdAndDelete(req.params.id);
-        if (!task) {
-           res.status(404).json({ msg: 'Task not found' });
+        if(admin.role == "admin"){
+            const task = await Task.findByIdAndDelete(req.params.id);
+            if (!task) {
+                res.status(404).json({ msg: 'Task not found' });
+            }
+            res.json({ msg: 'Task deleted' });
+        }else{
+            res.status(200).json({msg:"you are not admin"});
         }
-         res.json({ msg: 'Task deleted' });
     }catch(e){
         res.status(201).json({msg:"task deleted"});
     }

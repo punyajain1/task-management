@@ -1,19 +1,19 @@
 const jwt = require("jsonwebtoken");
-const user_key = "user1234";
+const key = "punyaadmin123";
 
 function adminMiddleware(req,res,token){
     const token =req.header.token;
     try{
         if(!token){
             res.json({
-                msg:"unautorised"
+                msg:"you are not signed in"
             })
         }else{
             const decode= jwt.verify(token , key);
             if(decode){
-                req.user_id = decode.indexOf;
+                req.adminid = decode._id;
             }else{
-                res.json({msg:"you are not signed in"})
+                res.json({msg:"unautorised"})
             }
         }
     }catch(e){
