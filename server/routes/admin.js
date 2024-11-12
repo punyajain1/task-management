@@ -1,12 +1,12 @@
-const{ Router } = require("express");
-const adminRouter = Router();
+const express = require("express");
+const adminRouter = express.Router();
 const { usermodel, taskmodel } = require("../db/db");
 const jwt = require('jsonwebtoken');
 const key = "punya123"
 const { adminMiddleware } = require("../middlewere/adminmidd.js");
 const {default: mongoose} = require("mongoose");
 
-mongoose.connect("mongodb+srv://punya01155:9810845969@cluster0.fm077.mongodb.net/")
+mongoose.connect("mongodb+srv://punyajain50:SIuDodmDCTQatABb@cluster0.x5wcx.mongodb.net/task-database")
 
 const {z} = require("zod");
 const bcrypt = require("bcrypt");
@@ -15,19 +15,18 @@ adminRouter.post("/signup",async function(req,res,){
     const reqbody = z.object({
         email: z.string().email().toLowerCase(),
         passward: z.string(),
-        username: z.string(),
-        role: z.string()
+        username: z.string()
     });
     const prased = reqbody.safeParse(req.body);
     if(prased){
         try{
-            const{email , passward , username ,role} = req.body;
-            const hashpass = await bcrypt(passward,5);
+            const{email , passward , username} = req.body;
+            const hashpass = await bcrypt.hash(passward, 5);
             await usermodel.create({
                 email:email,
                 passward:hashpass,
                 username: username,
-                role:"user"
+                role:"admin"
             });
             res.json({ msg:"signup done" });
         }catch(e){
@@ -37,14 +36,14 @@ adminRouter.post("/signup",async function(req,res,){
 })
 
 
-adminRouter.post("/signin", async function(req,res){
+adminRouter.get("/signin", async function(req,res){
     const {email , passward} = req.body;
-    const admin = await usermodel.findOne({email:email});
     try{
+        const admin = await usermodel.findOne({ email : email });
         if(admin){
             const passmatch = await bcrypt.compare(passward , admin.passward);
             if(passmatch){
-                const token = await jwt.sign({id:admin._id , key});
+                const token = await jwt.sign({ id: admin._id }, key);
                 res.json({token: token , role: admin.role});
             }else{
                 res.json({msg:"invalid passward"});
@@ -52,8 +51,8 @@ adminRouter.post("/signin", async function(req,res){
         }else{
             res.json({msg:"user dose not exist"});
         }
-    }catch(e){
-        res.status(202).json({msg: "invald input"});
+    }catch(e) {
+        res.status(400).json({ msg: "Invalid input", error: e.message });
     }
 })
 
@@ -75,7 +74,7 @@ adminRouter.post("/task" ,adminMiddleware,async function(req,res){
     })
 })
 
-adminRouter.put("/task", async function(req,res){
+adminRouter.put("/edit-task", async function(req,res){
     const adminid = req.adminid;
     const {title,description,due_date,asignee,status,taskId} = req.body;
     const taks = await taskmodel.updateOne({
@@ -91,7 +90,7 @@ adminRouter.put("/task", async function(req,res){
     res.json({msg:"task updated"});
 })
 
-adminRouter.delete("/task" , adminMiddleware,async function(req,res){
+adminRouter.delete("/del-task" , adminMiddleware,async function(req,res){
     const adminid = req.adminid;
     const admin = usermodel.findById(adminid);
     try{
@@ -108,3 +107,7 @@ adminRouter.delete("/task" , adminMiddleware,async function(req,res){
         res.status(201).json({msg:"task deleted"});
     }
 })
+
+
+
+module.exports = adminRouter;

@@ -1,8 +1,8 @@
 const jwt = require("jsonwebtoken");
-const key = "punyaadmin123";
+const key = "punya123";
 
-function adminMiddleware(req,res){
-    const token =req.header.token;
+function adminMiddleware(req,res,next){
+    const token = req.headers.token;
     try{
         if(!token){
             res.json({
@@ -12,12 +12,13 @@ function adminMiddleware(req,res){
             const decode= jwt.verify(token , key);
             if(decode){
                 req.adminid = decode._id;
+                next();
             }else{
                 res.json({msg:"unautorised"})
             }
         }
     }catch(e){
-        res.status(300).json({msg:"error"})
+        res.status(300).json({msg:"error" , error:e.message})
 
     }
 }
