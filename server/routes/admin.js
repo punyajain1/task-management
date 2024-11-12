@@ -90,23 +90,25 @@ adminRouter.put("/edit-task", async function(req,res){
     res.json({msg:"task updated"});
 })
 
-adminRouter.delete("/del-task" , adminMiddleware,async function(req,res){
+adminRouter.delete("/del-task/:id", adminMiddleware, async function (req, res) {
     const adminid = req.adminid;
-    const admin = usermodel.findById(adminid);
-    try{
-        if(admin.role == "admin"){
+    try {
+        const admin = await usermodel.findById(adminid);
+        if(admin && admin.role==="admin"){
             const task = await Task.findByIdAndDelete(req.params.id);
-            if (!task) {
-                res.status(404).json({ msg: 'Task not found' });
+            if(!task){
+                return res.status(404).json({ msg: 'Task not found' });
             }
-            res.json({ msg: 'Task deleted' });
+            return res.json({ msg: 'Task deleted' });
         }else{
-            res.status(200).json({msg:"you are not admin"});
+            return res.status(403).json({ msg: "You are not an admin" });
         }
-    }catch(e){
-        res.status(201).json({msg:"task deleted"});
+    }catch (e) {
+        console.error(e);
+        return res.status(500).json({ msg: "An error occurred", error: e.message });
     }
-})
+});
+
 
 
 
