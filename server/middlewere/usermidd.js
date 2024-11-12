@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const key = "punyauser123"
 
-function userMiddleware(req,res,next){
+function userMiddleware(req,res){
     const token = req.header.token;
     try{
         if(!token){
