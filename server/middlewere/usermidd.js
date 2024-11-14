@@ -1,15 +1,15 @@
 const jwt = require('jsonwebtoken');
 const key = "punyauser123"
 
-function userMiddleware(req,res){
-    const token = req.header.token;
+function userMiddleware(req,res,next){
+    const token = req.headers.tuser;
     try{
         if(!token){
-            return res.status(401).jsron({ msg: "Unauthorized" });
+            return res.status(401).json({ msg: "Unauthorized" });
         }else{
-            const decode = jwt.verify(token , key);
+            const decoded = jwt.verify(token , key);
             if(decoded){
-                req.userId = decoded.id;
+                req.userid = decoded.id;
                 next();
             }else{
                 res.status(403).json({ message: "You are not signed in" });

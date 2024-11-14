@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-mongoose.connect("mongodb+srv://punyajain50:SIuDodmDCTQatABb@cluster0.x5wcx.mongodb.net/task-database");
+mongoose.connect("mongodb+srv://admin:VowyYnkBsv1ZGvQu@cluster0.vuzwp.mongodb.net/task-database");
 
 const Schema= mongoose.Schema;
 const objid= mongoose.Schema.Types.ObjectId;
@@ -15,8 +15,8 @@ const Task = new Schema({
     title: String,
     description: String,
     due_date: Date,
-    asignee: String,
-    creator: objid,
+    asignee: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    creator: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     status: {type: String,enum: ['To Do', 'In Progress', 'Done'],default: 'To Do'},
 })
 

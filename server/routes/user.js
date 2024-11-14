@@ -1,12 +1,12 @@
 const express = require("express");
 const userRouter = express.Router();
-const { usermodel, taskmodel } = require("../db/db");
+const { usermodel , taskmodel } = require("../db/db");
 const jwt = require('jsonwebtoken');
 const key = "punyauser123"
 const { userMiddleware } = require("../middlewere/usermidd.js");
 const {default: mongoose} = require("mongoose");
 
-mongoose.connect("mongodb+srv://punyajain50:SIuDodmDCTQatABb@cluster0.x5wcx.mongodb.net/task-database")
+mongoose.connect("mongodb+srv://admin:VowyYnkBsv1ZGvQu@cluster0.vuzwp.mongodb.net/task-database")
 
 const {z} = require("zod");
 const bcrypt = require("bcrypt");
@@ -44,7 +44,7 @@ userRouter.post("/signin",async function(req,res){
             const passmatch = await bcrypt.compare(passward , user.passward);
             if(passmatch){
                 const token = await jwt.sign({id:user._id} , key);
-                res.json({token: token , role: user.role});
+                res.json({user_token: token , role: user.role});
             }else{
                 res.json({msg:"invalid passward"});
             }
@@ -56,14 +56,17 @@ userRouter.post("/signin",async function(req,res){
     }
 })
 
-userRouter.get("/tasks",userMiddleware,async function(req,res){
-    try{
-        const tasks = await taskmodel.findById({assignee:req.userId});
-        res.json({tasks:tasks});
-    }catch(e){
-        res.status(500).json({msg:"database error"})
+userRouter.get("/tasks", userMiddleware, async function (req, res) {
+    try {
+        const userId = req.userid;
+        const tasks = await taskmodel.find({ assignee: userId });
+        res.json({ tasks: tasks });
+    } catch (e) {
+        console.error("Error retrieving tasks:", e);
+        res.status(500).json({ msg: "Database error", error: e.message });
     }
-})
+});
+
 
 
 userRouter.put("/task",userMiddleware,async function(req,res){

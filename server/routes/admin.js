@@ -6,10 +6,11 @@ const key = "punya123"
 const { adminMiddleware } = require("../middlewere/adminmidd.js");
 const {default: mongoose} = require("mongoose");
 
-mongoose.connect("mongodb+srv://punyajain50:SIuDodmDCTQatABb@cluster0.x5wcx.mongodb.net/task-database")
+mongoose.connect("mongodb+srv://admin:VowyYnkBsv1ZGvQu@cluster0.vuzwp.mongodb.net/task-database")
 
 const {z} = require("zod");
 const bcrypt = require("bcrypt");
+const { userMiddleware } = require("../middlewere/usermidd.js");
 
 adminRouter.post("/signup",async function(req,res,){
     const reqbody = z.object({
@@ -30,7 +31,7 @@ adminRouter.post("/signup",async function(req,res,){
             });
             res.json({ msg:"signup done" });
         }catch(e){
-            res.status(201).json({msg: "error while user signup"});
+            res.status(201).json({msg: "error while admin signup"});
         }
     }
 })
@@ -44,7 +45,7 @@ adminRouter.get("/signin", async function(req,res){
             const passmatch = await bcrypt.compare(passward , admin.passward);
             if(passmatch){
                 const token = await jwt.sign({ id: admin._id }, key);
-                res.json({token: token , role: admin.role});
+                res.json({admin_token: token , role: admin.role});
             }else{
                 res.json({msg:"invalid passward"});
             }
@@ -56,23 +57,27 @@ adminRouter.get("/signin", async function(req,res){
     }
 })
 
-adminRouter.post("/task" ,adminMiddleware,async function(req,res){
-    const adminid = req.adminid;
-    const {title,description,due_date,asignee,status} = req.body;
-    const task = await taskmodel.create({
-        title: title,
-        description: description,
-        due_date: due_date,
-        asignee: asignee,
-        creator: adminid,
-        status: status
-    })
+adminRouter.post("/task", adminMiddleware, userMiddleware, async function(req, res) {
+    try {
+        const adminid = new mongoose.Types.ObjectId(req.adminid);  // Ensure ObjectId type
+        const userid = new mongoose.Types.ObjectId(req.userid);
+        const { title, description, due_date, status } = req.body;
+        const task = await taskmodel.create({
+            title,
+            description,
+            due_date,
+            asignee: userid,
+            creator: adminid,
+            status
+        });
 
-    res.json({
-        message: "Task created",
-        taskId: task._id
-    })
-})
+        res.json({ message: "Task created", taskId: task._id });
+    } catch (error) {
+        res.status(500).json({ message: "Task creation failed", error: error.message });
+    }
+});
+
+
 
 adminRouter.put("/edit-task", async function(req,res){
     const adminid = req.adminid;
