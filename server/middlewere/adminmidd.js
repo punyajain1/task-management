@@ -1,15 +1,17 @@
 const jwt = require("jsonwebtoken");
+const { usermodel } = require("../db/db");
 const key = "punya123";
 
-function adminMiddleware(req,res,next){
+async function adminMiddleware(req,res,next){
     const token = req.headers.tadmin;
     try{
         if(!token){
             res.json({msg:"you are not signed in"})
         }else{
             const decode= jwt.verify(token , key);
+            const admin = await usermodel.findById(decode.id);
             if(decode){
-                req.adminid = decode.id;
+                req.adminid = admin._id;
                 console.log("Admin ID:", req.adminid);
                 next();
             }else{

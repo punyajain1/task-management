@@ -79,9 +79,10 @@ adminRouter.post("/task", adminMiddleware, userMiddleware, async function(req, r
 
 
 
-adminRouter.put("/edit-task", async function(req,res){
+adminRouter.put("/edit-task/:id", async function(req,res){
     const adminid = req.adminid;
-    const {title,description,due_date,asignee,status,taskId} = req.body;
+    const taskId = new mongoose.Types.ObjectId(req.params.id);
+    const {title,description,due_date,asignee,status} = req.body;
     const taks = await taskmodel.updateOne({
         _id: taskId
     },{
@@ -97,10 +98,11 @@ adminRouter.put("/edit-task", async function(req,res){
 
 adminRouter.delete("/del-task/:id", adminMiddleware, async function (req, res) {
     const adminid = req.adminid;
+    const taskid = new mongoose.Types.ObjectId(req.params.id)
     try {
         const admin = await usermodel.findById(adminid);
-        if(admin && admin.role==="admin"){
-            const task = await Task.findByIdAndDelete(req.params.id);
+        if(admin.role==="admin"){
+            const task = await taskmodel.findOneAndDelete(taskid);
             if(!task){
                 return res.status(404).json({ msg: 'Task not found' });
             }

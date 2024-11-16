@@ -22,4 +22,5 @@ const Task = new Schema({
 
 const usermodel = mongoose.model("user" , User);
 const taskmodel = mongoose.model("task" , Task);
-module.exports = {usermodel , taskmodel}
+
+module.exports = {usermodel , taskmodel };

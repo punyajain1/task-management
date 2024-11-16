@@ -59,7 +59,8 @@ userRouter.post("/signin",async function(req,res){
 userRouter.get("/tasks", userMiddleware, async function (req, res) {
     try {
         const userId = req.userid;
-        const tasks = await taskmodel.find({ assignee: userId });
+        console.log("User ID:", userId);
+        const tasks = await taskmodel.find({ asignee: userId});
         res.json({ tasks: tasks });
     } catch (e) {
         console.error("Error retrieving tasks:", e);
@@ -69,19 +70,25 @@ userRouter.get("/tasks", userMiddleware, async function (req, res) {
 
 
 
-userRouter.put("/task",userMiddleware,async function(req,res){
-    
-    const user = await usermodel.findById(req.userId);
-    const {status,taskId} = req.body;
-    const task = await taskmodel.findById(taskId);
-
-    if(user._id.equals(task.assignee)) {
-        task.status = status;
-        await task.save();
-        res.json({ msg: 'Task updated' });
-
-    }else{
-        return res.status(403).json({ msg: 'Forbidden' });
+userRouter.put("/edit_task/:id",userMiddleware,async function(req,res){
+    try{
+        const taskId = new mongoose.Types.ObjectId(req.params.id);
+        console.log('Task ID:', taskId);
+        // const user = await usermodel.findById(req.userId);
+        const status = req.body.status;
+        const task = await taskmodel.findById(taskId);
+        console.log('Task:', task);
+        if(req.userId === task.assignee) {
+            task.status = status;
+            await task.save();
+            res.json({ msg: 'Task updated' });
+        }else{
+            return res.status(403).json({ msg: 'Forbidden' });
+        }
+    }catch(e){
+        res.status(500).json({
+            msg : e.message
+        })
     }
 })
 
