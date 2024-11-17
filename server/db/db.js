@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-mongoose.connect("mongodb+srv://admin:VowyYnkBsv1ZGvQu@cluster0.vuzwp.mongodb.net/task-database");
+mongoose.connect("");
 
 const Schema= mongoose.Schema;
 const objid= mongoose.Schema.Types.ObjectId;
